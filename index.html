@@ -21,7 +21,7 @@
       font-family: Arial, sans-serif;
     }
 
-    /* Закреплённая панель */
+    /* Закрепленная панель */
     .category-bar {
       position: sticky;
       top: 0;
@@ -52,7 +52,7 @@
       justify-content: center;
       background: transparent;
       color: #000000;
-      border: 2px solid rgba(230, 30, 20, 0.35);
+      border: 2px solid rgba(230,30,20,0.35);
       border-radius: 50px;
       padding: 10px 17px;
       font-size: 13px;
@@ -62,24 +62,21 @@
       transition: border-color 0.25s ease;
     }
 
-    /* Наведение */
-    .category-btn:hover {
-      border-color: #f02010;
-    }
-
-    /* Активная категория */
+    .category-btn:hover,
+    .category-btn:focus-visible,
     .category-btn.active {
       border-color: #f02010;
       background: transparent;
     }
 
-    /* Основное меню */
+    /* Изображения меню */
     .container {
       max-width: 480px;
       margin: 0 auto;
     }
 
     .menu-section {
+      position: relative;
       scroll-margin-top: 75px;
     }
 
@@ -87,6 +84,16 @@
       width: 100%;
       height: auto;
       display: block;
+    }
+
+    /* Невидимая точка перехода к десертам */
+    .dessert-anchor {
+      position: absolute;
+      top: 64%;
+      left: 0;
+      width: 1px;
+      height: 1px;
+      pointer-events: none;
     }
 
     @media (max-width: 480px) {
@@ -104,15 +111,11 @@
 
 <body>
 
-  <!-- Категории меню -->
-  <nav class="category-bar">
+  <!-- Панель категорий -->
+  <nav class="category-bar" aria-label="Категории меню">
     <div class="category-list">
 
-      <a href="#drinks" class="category-btn active">
-        Напитки
-      </a>
-
-      <a href="#sliders" class="category-btn">
+      <a href="#sliders" class="category-btn active">
         Пара слайдеров
       </a>
 
@@ -133,80 +136,141 @@
       </a>
 
       <a href="#salads" class="category-btn">
-        Салаты и десерты
+        Салаты
+      </a>
+
+      <a href="#desserts" class="category-btn">
+        Десерты
+      </a>
+
+      <a href="#drinks" class="category-btn">
+        Напитки
       </a>
 
     </div>
   </nav>
 
-  <!-- Изображения меню -->
+  <!-- Страницы меню -->
   <main class="container">
 
-    <section id="drinks" class="menu-section">
-      <img src="Histor_0_1-100.jpg"
-           class="menu-image"
-           alt="Напитки">
-    </section>
-
+    <!-- 0. Пара слайдеров -->
     <section id="sliders" class="menu-section">
-      <img src="Histor_1_2-100.jpg"
-           class="menu-image"
-           alt="Пара слайдеров">
+      <img
+        src="Histor_0_1-100.jpg"
+        class="menu-image"
+        alt="Пара слайдеров">
     </section>
 
+    <!-- 1. Картофель фри -->
     <section id="fries" class="menu-section">
-      <img src="Histor_2-100.jpg"
-           class="menu-image"
-           alt="Картофель фри">
+      <img
+        src="Histor_1_2-100.jpg"
+        class="menu-image"
+        alt="Картофель фри">
     </section>
 
+    <!-- 2. Бургеры / Смэш -->
     <section id="burgers" class="menu-section">
-      <img src="Histor_3_1-100.jpg"
-           class="menu-image"
-           alt="Бургеры и смэш">
+      <img
+        src="Histor_2-100.jpg"
+        class="menu-image"
+        alt="Бургеры и смэш">
     </section>
 
+    <!-- 3. Комбо -->
     <section id="combo" class="menu-section">
-      <img src="Histor_4_2-100.jpg"
-           class="menu-image"
-           alt="Комбо">
+      <img
+        src="Histor_3_1-100.jpg"
+        class="menu-image"
+        alt="Комбо">
     </section>
 
+    <!-- 4. Снеки -->
     <section id="snacks" class="menu-section">
-      <img src="Histor_5_1-100.jpg"
-           class="menu-image"
-           alt="Снеки">
+      <img
+        src="Histor_4_2-100.jpg"
+        class="menu-image"
+        alt="Снеки">
     </section>
 
+    <!-- 5. Салаты и десерты -->
     <section id="salads" class="menu-section">
-      <img src="Histor_6_2-100.jpg"
-           class="menu-image"
-           alt="Салаты и десерты">
+
+      <img
+        src="Histor_5_1-100.jpg"
+        class="menu-image"
+        alt="Салаты и десерты">
+
+      <!-- Точка перехода к десертам -->
+      <span
+        id="desserts"
+        class="dessert-anchor"
+        aria-hidden="true">
+      </span>
+
+    </section>
+
+    <!-- 6. Напитки -->
+    <section id="drinks" class="menu-section">
+      <img
+        src="Histor_6_2-100.jpg"
+        class="menu-image"
+        alt="Напитки">
     </section>
 
   </main>
 
   <script>
-    const buttons = [...document.querySelectorAll('.category-btn')];
-    const sections = [...document.querySelectorAll('.menu-section')];
-    const bar = document.querySelector('.category-bar');
+    const buttons = [
+      ...document.querySelectorAll('.category-btn')
+    ];
 
+    const bar = document.querySelector('.category-bar');
     let scrollingToSection = false;
     let scrollTimeout;
+    let framePending = false;
+
+    function getTarget(button) {
+      const id = button.getAttribute('href').slice(1);
+      return document.getElementById(id);
+    }
+
+    function getTargetPosition(button) {
+      const target = getTarget(button);
+
+      if (!target) return 0;
+
+      return target.getBoundingClientRect().top
+        + window.scrollY;
+    }
 
     function activateCategory(index) {
       buttons.forEach((button, i) => {
-        button.classList.toggle('active', i === index);
+        const isActive = i === index;
+        button.classList.toggle('active', isActive);
+
+        if (isActive) {
+          button.setAttribute('aria-current', 'location');
+        } else {
+          button.removeAttribute('aria-current');
+        }
       });
 
-      buttons[index].scrollIntoView({
-        behavior: 'smooth',
-        block: 'nearest',
-        inline: 'nearest'
+      const activeButton = buttons[index];
+      const categoryList = document.querySelector('.category-list');
+
+      // Листаем только горизонтальную панель
+      const left = activeButton.offsetLeft
+        - categoryList.offsetLeft
+        - (categoryList.clientWidth - activeButton.offsetWidth) / 2;
+
+      categoryList.scrollTo({
+        left: left,
+        behavior: 'smooth'
       });
     }
 
-    // Переход по нажатию
+    // Нажатие на кнопку категории
     buttons.forEach((button, index) => {
       button.addEventListener('click', (event) => {
         event.preventDefault();
@@ -216,33 +280,35 @@
 
         activateCategory(index);
 
-        const target = sections[index];
-        const targetY =
-          target.getBoundingClientRect().top +
-          window.scrollY -
-          bar.offsetHeight;
+        const targetY = getTargetPosition(button)
+          - bar.offsetHeight;
 
         window.scrollTo({
-          top: targetY,
+          top: Math.max(0, targetY),
           behavior: 'smooth'
         });
 
+        // Завершаем переход после прокрутки
         scrollTimeout = setTimeout(() => {
           scrollingToSection = false;
           updateOnScroll();
-        }, 1000);
+        }, 1100);
       });
     });
 
-    // Отслеживание текущего раздела
+    // Автоматическая смена категории
     function updateOnScroll() {
       if (scrollingToSection) return;
 
-      const offset = bar.offsetHeight + 20;
+      const position = window.scrollY
+        + bar.offsetHeight + 15;
+
       let currentIndex = 0;
 
-      sections.forEach((section, index) => {
-        if (section.getBoundingClientRect().top <= offset) {
+      buttons.forEach((button, index) => {
+        const targetPosition = getTargetPosition(button);
+
+        if (targetPosition <= position) {
           currentIndex = index;
         }
       });
@@ -256,12 +322,20 @@
       }
     }
 
-    window.addEventListener('scroll', updateOnScroll, {
-      passive: true
-    });
+    window.addEventListener('scroll', () => {
+      if (framePending) return;
+
+      framePending = true;
+
+      requestAnimationFrame(() => {
+        updateOnScroll();
+        framePending = false;
+      });
+    }, { passive: true });
 
     window.addEventListener('resize', updateOnScroll);
     window.addEventListener('load', updateOnScroll);
+
   </script>
 
 </body>
